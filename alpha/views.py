@@ -11,7 +11,9 @@ def index(request):
     return render(request, 'index.html', {'items': items})
 
 # Create your views here.
-
+def my_view(request):
+    messages.success(request, 'This is a success message.')
+    messages.error(request, 'This is an error message.')
 def signup(request):
     if request.method == 'POST':
         form = SignupForm(request.POST)
@@ -20,9 +22,11 @@ def signup(request):
             if login_info.objects.filter(username=form.cleaned_data['username']).exists():
                 messages.error(request, 'Username already exists. Please choose a different username.')
                 return render(request, 'signup.html', {'form': form})
-
-            # Create user and log in
-            # Use create from the user model manager for proper password hashing
+            
+            if login_info.objects.filter(email=form.cleaned_data['email']).exists():
+                messages.error(request, 'Email already exists. Please choose a different email or proceed to login.')
+                return render(request, 'signup.html', {'form': form})
+            
             user = login_info.objects.create(
                 username=form.cleaned_data['username'],
                 age=form.cleaned_data['age'],
@@ -42,50 +46,35 @@ def signup(request):
     else:
         form = SignupForm()
     return render(request, 'signup.html', {'form': form})
-# def signup(request):
-#     if request.method == 'POST':
-#         form = SignupForm(request.POST)
-#         if form.is_valid():
-#             # Check if the username already exists
-#             if login_info.objects.filter(username=form.cleaned_data['username']).exists():
-#                 messages.error(request, 'Username already exists. Please choose a different username.')
-#                 return render(request, 'signup.html', {'form': form})
-
-#             # Create user and log in
-#             # (Remember to handle password hashing in a real-world scenario)
-#             user = login_info.objects.create_user(
-#                 username=form.cleaned_data['username'],
-#                 password=form.cleaned_data['password'],
-#                 age = form.cleaned_data['age'],
-#                 name=form.cleaned_data['name'],
-#                 email=form.cleaned_data['email'],
-#                 phone_number=form.cleaned_data['phone_number'],
-#                 security_question=form.cleaned_data['security_question'],
-#                 security_answer=form.cleaned_data['security_answer']
-#             )
-#             login(request, user)
-
-#             messages.success(request, 'Account created successfully!')
-
-#             return redirect('index')  # Redirect to your homepage
-#     else:
-#         form = SignupForm()
-#     return render(request, 'signup.html', {'form': form})
 
 def login_view(request):
     if request.method == 'POST':
         form = LoginForm(request.POST)
+        
         if form.is_valid():
-            user = authenticate(request, username=form.cleaned_data['username'], password=form.cleaned_data['password'])
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+
+
+            if not (login_info.objects.filter(username=form.cleaned_data['username']).exists()):
+                messages.error(request, 'Username does not exist. Please Sign-up first.')
+                
+
+            # Check if the username exists in the database
+            user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
-                return redirect('index')  # Redirect to your homepage
+                return redirect('user_page')  
             else:
-                # Handle invalid login
-                pass
+                # Handle incorrect username or password
+                messages.error(request, 'Invalid username or password.')
+        
     else:
         form = LoginForm()
+
     return render(request, 'login.html', {'form': form})
+
+
 
 def forgot_password(request):
     if request.method == 'POST':
@@ -95,11 +84,12 @@ def forgot_password(request):
             security_question = form.cleaned_data['security_question']
             security_answer = form.cleaned_data['security_answer']
 
-            try:
-                user = login_info.objects.get(username=username, security_question=security_question, security_answer=security_answer)
-            except login_info.DoesNotExist:
+            user = login_info.objects.filter(username=username, security_question=security_question, security_answer=security_answer).first()
+
+            if user is None:
                 # Handle incorrect security question or answer
-                return render(request, 'forgot_password.html', {'form': form, 'error_message': 'Invalid security question or answer'})
+                messages.error(request, 'Invalid security question or answer.')
+                return render(request, 'forgot_password.html', {'form': form})
 
             # Render a new form for setting a new password
             return render(request, 'set_new_password.html', {'user_id': user.id})
@@ -108,7 +98,6 @@ def forgot_password(request):
         form = ForgotPasswordForm()
 
     return render(request, 'forgot_password.html', {'form': form})
-
 def set_new_password(request, user_id):
     user = login_info.objects.get(id=user_id)
 
@@ -123,3 +112,9 @@ def set_new_password(request, user_id):
         return redirect('login')
 
     return render(request, 'set_new_password.html', {'user_id': user_id})
+
+
+
+def user_page(request):
+    
+    return render(request, 'userpage.html')

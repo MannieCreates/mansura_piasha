@@ -3,16 +3,6 @@ from django.contrib.auth.forms import UserCreationForm
 from .models import login_info, SECURITY_QUESTION_CHOICES
 
 
-# class SignupForm(UserCreationForm):
-#     email = forms.EmailField(max_length=254, help_text='Required. Enter a valid email address.')
-
-#     class Meta:
-#         model = login_info
-#         fields = ['username', 'password', 'age', 'name', 'email','phone_number', 'security_question', 'security_answer']
-
-#     def __init__(self, *args, **kwargs):
-#         super(SignupForm, self).__init__(*args, **kwargs)
-#         self.fields['security_question'].widget = forms.Select(choices=SECURITY_QUESTION_CHOICES)
 class SignupForm(forms.Form):
     username = forms.CharField()
     password = forms.CharField(widget=forms.PasswordInput())
