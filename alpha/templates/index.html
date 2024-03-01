@@ -119,6 +119,18 @@
                               <i class="fa fa-shopping-cart" aria-hidden="true"></i>
                               <span class="padding_10">Cart</span></a>
                            </li>
+                           <li><a href="polls">
+                              <i class="fa fa-thumbs-up" aria-hidden="true"></i>
+                              <span class="padding_10">Polls</span></a>
+                           </li>
+                           <li>
+                              <div class="btn-holder" onclick="toggleDarkMode()">
+                                 <div class="btn-circle d-flex justify-content-center align-items-center">
+                                    <i class="d-flex fa fa-moon-o"></i>
+                                 </div>
+                                 <input type="checkbox" class="checkbox">
+                              </div>
+                           </li>
                            <!-- <li><a href="#">
                               <i class="fa fa-user" aria-hidden="true"></i>
                               <span class="padding_10">Log in / Sign-up</span></a>
@@ -650,6 +662,65 @@
          
          function closeNav() {
            document.getElementById("mySidenav").style.width = "0";
+         }
+         function initTheme() {
+            let switchEl = document.querySelector('.btn-circle');
+            let dark = localStorage.getItem('dark')
+            if (dark === 'true') {
+               document.body.classList.add('tw-dark');
+               switchEl.style.transition = "none";
+               switchEl.classList.add('active');
+               setTimeout(() => {
+                  switchEl.style.transition = "all 0.5s ease";
+               }, 1);
+            } else {
+               document.body.classList.remove('tw-dark');
+            }
+         }
+         initTheme();
+         function toggleDarkMode() {
+            let dark = localStorage.getItem('dark')
+            if (dark === 'true') {
+               document.body.classList.remove('tw-dark');
+               localStorage.setItem('dark', 'false');
+            } else {
+               document.body.classList.add('tw-dark');
+               localStorage.setItem('dark', 'true');
+            }
+         }
+         var allBtns = document.querySelectorAll('.btn-holder');
+
+         for (i = 0; i < allBtns.length; i++) {
+            var btn = allBtns[i];
+
+            btn.addEventListener('click', function () {
+               var allNodes = btn.children;
+
+               btn.querySelector('input').checked = true;
+               for (j = 0; j < allNodes.length; j++) {
+                  var node = allNodes[j];
+                  var isActive;
+
+                  if (node.classList.contains('btn-circle')) {
+                     if (!node.classList.contains('active')) {
+                        node.classList.add('active');
+                        isActive = true;
+                     } else {
+                        node.classList.remove('active');
+                        isActive = false;
+                     }
+                  }
+
+                  // check for check box and change it's state
+                  if (node.classList.contains('checkbox')) {
+                     if (isActive) {
+                        node.checked = true;
+                     } else {
+                        node.checked = false;
+                     }
+                  }
+               }
+            })
          }
       </script>
    </body>
